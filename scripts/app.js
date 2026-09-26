@@ -30,13 +30,72 @@ class LexiPulseApp {
     return SAMPLE_DOCUMENTS[this.currentDocId] || SAMPLE_DOCUMENTS["lease-agreement"];
   }
 
+  openModal(modalId, triggerEl = null) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    this.lastFocusedElement = triggerEl || document.activeElement;
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
+    const focusable = modal.querySelector("input:not([type=hidden]), textarea, select, button:not(.btn-icon)");
+    if (focusable) {
+      setTimeout(() => focusable.focus(), 50);
+    }
+  }
+
+  closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+    if (this.lastFocusedElement && typeof this.lastFocusedElement.focus === "function") {
+      this.lastFocusedElement.focus();
+    }
+  }
+
   bindEvents() {
     // Tab Navigation
     document.querySelectorAll(".nav-tab").forEach(tab => {
-      tab.addEventListener("click", (e) => {
+      tab.addEventListener("click", () => {
         const targetView = tab.dataset.tab;
         this.switchTab(targetView);
       });
+    });
+
+    // Keyboard Arrow Navigation for WAI-ARIA Tablist
+    const tabBar = document.querySelector(".nav-tab-bar");
+    if (tabBar) {
+      tabBar.addEventListener("keydown", (e) => {
+        const tabs = Array.from(tabBar.querySelectorAll(".nav-tab"));
+        const idx = tabs.findIndex(t => t === document.activeElement);
+        if (idx === -1) return;
+        let targetIdx = idx;
+        if (e.key === "ArrowRight") {
+          targetIdx = (idx + 1) % tabs.length;
+        } else if (e.key === "ArrowLeft") {
+          targetIdx = (idx - 1 + tabs.length) % tabs.length;
+        } else if (e.key === "Home") {
+          targetIdx = 0;
+        } else if (e.key === "End") {
+          targetIdx = tabs.length - 1;
+        } else {
+          return;
+        }
+        e.preventDefault();
+        tabs[targetIdx].focus();
+        tabs[targetIdx].click();
+      });
+    }
+
+    // Global Escape Key listener to close active dialogs
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        ["upload-modal", "settings-modal", "output-modal"].forEach(id => {
+          const m = document.getElementById(id);
+          if (m && m.classList.contains("active")) {
+            this.closeModal(id);
+          }
+        });
+      }
     });
 
     // Document Selector dropdown
@@ -47,11 +106,15 @@ class LexiPulseApp {
       });
     }
 
-    // Reading level buttons
+    // Reading level buttons (Radio group semantics)
     document.querySelectorAll(".level-btn").forEach(btn => {
       btn.addEventListener("click", () => {
-        document.querySelectorAll(".level-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".level-btn").forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-checked", "false");
+        });
         btn.classList.add("active");
+        btn.setAttribute("aria-checked", "true");
         this.currentReadingLevel = btn.dataset.level;
         this.renderClausesFeed();
       });
@@ -68,43 +131,41 @@ class LexiPulseApp {
 
     // New Document Upload modal buttons
     const btnNewDoc = document.getElementById("btn-new-doc");
-    const uploadModal = document.getElementById("upload-modal");
     const closeUploadBtn = document.getElementById("close-upload-modal");
     const cancelUploadBtn = document.getElementById("cancel-upload-btn");
     const submitUploadBtn = document.getElementById("submit-upload-btn");
 
-    if (btnNewDoc && uploadModal) {
-      btnNewDoc.addEventListener("click", () => uploadModal.classList.add("active"));
+    if (btnNewDoc) {
+      btnNewDoc.addEventListener("click", (e) => this.openModal("upload-modal", e.currentTarget));
     }
-    if (closeUploadBtn) closeUploadBtn.addEventListener("click", () => uploadModal.classList.remove("active"));
-    if (cancelUploadBtn) cancelUploadBtn.addEventListener("click", () => uploadModal.classList.remove("active"));
+    if (closeUploadBtn) closeUploadBtn.addEventListener("click", () => this.closeModal("upload-modal"));
+    if (cancelUploadBtn) cancelUploadBtn.addEventListener("click", () => this.closeModal("upload-modal"));
     if (submitUploadBtn) {
       submitUploadBtn.addEventListener("click", () => this.handleCustomDocUpload());
     }
 
     // Settings Modal
     const btnSettings = document.getElementById("btn-settings");
-    const settingsModal = document.getElementById("settings-modal");
     const closeSettingsBtn = document.getElementById("close-settings-modal");
     const saveSettingsBtn = document.getElementById("save-settings-btn");
 
-    if (btnSettings && settingsModal) {
-      btnSettings.addEventListener("click", () => {
+    if (btnSettings) {
+      btnSettings.addEventListener("click", (e) => {
         const keyInput = document.getElementById("settings-api-key");
         const modelSelect = document.getElementById("settings-model-select");
         if (keyInput) keyInput.value = GeminiClient.getApiKey();
         if (modelSelect) modelSelect.value = GeminiClient.getModel();
-        settingsModal.classList.add("active");
+        this.openModal("settings-modal", e.currentTarget);
       });
     }
-    if (closeSettingsBtn) closeSettingsBtn.addEventListener("click", () => settingsModal.classList.remove("active"));
+    if (closeSettingsBtn) closeSettingsBtn.addEventListener("click", () => this.closeModal("settings-modal"));
     if (saveSettingsBtn) {
       saveSettingsBtn.addEventListener("click", () => {
         const keyInput = document.getElementById("settings-api-key");
         const modelSelect = document.getElementById("settings-model-select");
         if (keyInput) GeminiClient.setApiKey(keyInput.value);
         if (modelSelect) GeminiClient.setModel(modelSelect.value);
-        settingsModal.classList.remove("active");
+        this.closeModal("settings-modal");
         this.updateLiveApiBadge();
         ExportUtils.showToast("AI Configuration Saved!", "success");
       });
@@ -116,20 +177,19 @@ class LexiPulseApp {
     const btnPrintDoc = document.getElementById("btn-print-doc");
 
     if (btnGenBrief) {
-      btnGenBrief.addEventListener("click", () => this.showOutputModal("Attorney Consultation Brief", LegalEngine.generateAttorneyBrief(this.getCurrentDocument())));
+      btnGenBrief.addEventListener("click", (e) => this.showOutputModal("Attorney Consultation Brief", LegalEngine.generateAttorneyBrief(this.getCurrentDocument()), e.currentTarget));
     }
     if (btnGenCounter) {
-      btnGenCounter.addEventListener("click", () => this.showOutputModal("Negotiation Counter-Proposal", LegalEngine.generateNegotiationCounter(this.getCurrentDocument())));
+      btnGenCounter.addEventListener("click", (e) => this.showOutputModal("Negotiation Counter-Proposal", LegalEngine.generateNegotiationCounter(this.getCurrentDocument()), e.currentTarget));
     }
     if (btnPrintDoc) {
       btnPrintDoc.addEventListener("click", () => ExportUtils.printPage());
     }
 
     // Close output modal
-    const outputModal = document.getElementById("output-modal");
     const closeOutputBtn = document.getElementById("close-output-modal");
-    if (closeOutputBtn && outputModal) {
-      closeOutputBtn.addEventListener("click", () => outputModal.classList.remove("active"));
+    if (closeOutputBtn) {
+      closeOutputBtn.addEventListener("click", () => this.closeModal("output-modal"));
     }
   }
 
@@ -153,13 +213,22 @@ class LexiPulseApp {
   switchTab(tabId) {
     this.activeTab = tabId;
     document.querySelectorAll(".nav-tab").forEach(tab => {
-      if (tab.dataset.tab === tabId) tab.classList.add("active");
+      const isActive = tab.dataset.tab === tabId;
+      if (isActive) tab.classList.add("active");
       else tab.classList.remove("active");
+      tab.setAttribute("aria-selected", isActive ? "true" : "false");
+      tab.setAttribute("tabindex", isActive ? "0" : "-1");
     });
 
     document.querySelectorAll(".tab-view").forEach(view => {
-      if (view.id === tabId) view.classList.add("active");
-      else view.classList.remove("active");
+      const isActive = view.id === tabId;
+      if (isActive) {
+        view.classList.add("active");
+        view.removeAttribute("hidden");
+      } else {
+        view.classList.remove("active");
+        view.setAttribute("hidden", "true");
+      }
     });
 
     // Trigger tab-specific renders
@@ -552,7 +621,7 @@ class LexiPulseApp {
     this.renderChecklists();
   }
 
-  showOutputModal(title, content) {
+  showOutputModal(title, content, triggerEl = null) {
     const modal = document.getElementById("output-modal");
     const modalTitle = document.getElementById("output-modal-title");
     const modalBody = document.getElementById("output-modal-body");
@@ -562,7 +631,7 @@ class LexiPulseApp {
     if (!modal) return;
 
     modalTitle.textContent = title;
-    modalBody.innerHTML = `<pre style="font-family: var(--font-mono); font-size: 0.82rem; white-space: pre-wrap; color: #CBD5E1; background: rgba(0,0,0,0.3); padding: 14px; border-radius: 8px;">${this.escapeHtml(content)}</pre>`;
+    modalBody.innerHTML = `<pre style="font-family: var(--font-mono); font-size: 0.82rem; white-space: pre-wrap; color: var(--text-secondary); background: rgba(0,0,0,0.3); padding: 14px; border-radius: 8px;">${this.escapeHtml(content)}</pre>`;
 
     if (copyBtn) {
       copyBtn.onclick = () => ExportUtils.copyToClipboard(content, `Copied ${title}!`);
@@ -571,13 +640,12 @@ class LexiPulseApp {
       downloadBtn.onclick = () => ExportUtils.downloadFile(`${title.toLowerCase().replace(/\s+/g, '_')}.md`, content);
     }
 
-    modal.classList.add("active");
+    this.openModal("output-modal", triggerEl);
   }
 
   handleCustomDocUpload() {
     const titleInput = document.getElementById("upload-doc-title");
     const textInput = document.getElementById("upload-doc-text");
-    const uploadModal = document.getElementById("upload-modal");
 
     if (!textInput || !textInput.value.trim()) {
       ExportUtils.showToast("Please paste or type contract text to analyze.", "error");
@@ -599,7 +667,7 @@ class LexiPulseApp {
       select.value = parsedDoc.id;
     }
 
-    uploadModal.classList.remove("active");
+    this.closeModal("upload-modal");
     textInput.value = "";
     if (titleInput) titleInput.value = "";
 
@@ -609,10 +677,11 @@ class LexiPulseApp {
 
   formatMarkdownText(text) {
     if (!text) return "";
-    return text
+    const escaped = this.escapeHtml(text);
+    return escaped
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/^>\s*(.*?)$/gm, '<blockquote style="border-left: 3px solid var(--primary); padding-left: 10px; margin: 8px 0; color: #94A3B8; font-style: italic;">$1</blockquote>')
+      .replace(/^>\s*(.*?)$/gm, '<blockquote style="border-left: 3px solid var(--primary); padding-left: 10px; margin: 8px 0; color: var(--text-secondary); font-style: italic;">$1</blockquote>')
       .replace(/\n\n/g, '<br><br>')
       .replace(/\n/g, '<br>');
   }
