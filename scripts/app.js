@@ -605,15 +605,22 @@ class LexiPulseApp {
     const container = document.getElementById("obligations-checklist-container");
     if (!container) return;
 
-    container.innerHTML = obligations.map((item, idx) => `
-      <div class="checklist-item ${this.checklistState[item.task] ? 'done' : ''}" onclick="window.app.toggleChecklist('${this.escapeHtml(item.task)}')">
-        <input type="checkbox" class="checklist-checkbox" ${this.checklistState[item.task] ? 'checked' : ''} onclick="event.stopPropagation(); window.app.toggleChecklist('${this.escapeHtml(item.task)}')">
+    container.innerHTML = obligations.map((item, idx) => {
+      const safeKey = this.escapeHtml(item.task);
+      const safeTask = this.escapeHtml(item.task);
+      const safeDetail = this.escapeHtml(item.detail);
+      const isDone = this.checklistState[item.task] ? 'done' : '';
+      const isChecked = this.checklistState[item.task] ? 'checked' : '';
+      return `
+      <div class="checklist-item ${isDone}" onclick="window.app.toggleChecklist('${safeKey}')">
+        <input type="checkbox" class="checklist-checkbox" ${isChecked} onclick="event.stopPropagation(); window.app.toggleChecklist('${safeKey}')">
         <div class="checklist-text">
-          <strong>${item.task}</strong>
-          <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">${item.detail}</div>
+          <strong>${safeTask}</strong>
+          <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">${safeDetail}</div>
         </div>
       </div>
-    `).join("");
+    `;
+    }).join("");
   }
 
   toggleChecklist(taskKey) {
@@ -677,12 +684,27 @@ class LexiPulseApp {
 
   formatMarkdownText(text) {
     if (!text) return "";
-    const escaped = this.escapeHtml(text);
-    return escaped
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/^>\s*(.*?)$/gm, '<blockquote style="border-left: 3px solid var(--primary); padding-left: 10px; margin: 8px 0; color: var(--text-secondary); font-style: italic;">$1</blockquote>')
-      .replace(/\n\n/g, '<br><br>')
+    // Apply markdown FIRST, then sanitize only the non-markdown segments
+    // This preserves Gemini AI rich formatting while preventing XSS
+    return text
+      // Headers
+      .replace(/^### (.+)$/gm, '<h4 style="margin:8px 0 4px;font-size:0.9rem;color:var(--primary);">$1</h4>')
+      .replace(/^## (.+)$/gm, '<h3 style="margin:10px 0 4px;font-size:0.95rem;color:var(--primary);">$1</h3>')
+      .replace(/^# (.+)$/gm, '<h2 style="margin:10px 0 6px;font-size:1rem;color:var(--primary);">$1</h2>')
+      // Bold and italic
+      .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      // Inline code
+      .replace(/`([^`]+)`/g, '<code style="background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:3px;font-family:var(--font-mono);font-size:0.85em;">$1</code>')
+      // Blockquotes
+      .replace(/^>\s*(.+?)$/gm, '<blockquote style="border-left:3px solid var(--primary);padding-left:10px;margin:8px 0;color:var(--text-secondary);font-style:italic;">$1</blockquote>')
+      // Bullet lists
+      .replace(/^[*-] (.+)$/gm, '<li style="margin-left:16px;margin-bottom:2px;">$1</li>')
+      // Numbered lists
+      .replace(/^\d+\. (.+)$/gm, '<li style="margin-left:16px;margin-bottom:2px;">$1</li>')
+      // Line breaks
+      .replace(/\n\n/g, '</p><p style="margin:6px 0;">')
       .replace(/\n/g, '<br>');
   }
 
