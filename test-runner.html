@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>LexiPulse AI - LegalEngine Automated Test Suite</title>
+  <script src="scripts/sample-documents.js"></script>
+  <script src="scripts/document-parser.js"></script>
+  <script src="scripts/legal-engine.js"></script>
+</head>
+<body style="font-family: sans-serif; background: #0F172A; color: #F8FAFC; padding: 24px;">
+  <h1>LegalEngine Verification & Diagnostics</h1>
+  <div id="test-results">Running tests...</div>
+
+  <script>
+    const results = [];
+    function assert(name, condition, details = "") {
+      if (condition) {
+        results.push({ name, pass: true });
+        console.log(`✅ PASS: ${name}`);
+      } else {
+        results.push({ name, pass: false, details });
+        console.error(`❌ FAIL: ${name} - ${details}`);
+      }
+    }
+
+    try {
+      // Test 1: Null & Empty documents handling
+      const nullMetrics = LegalEngine.calculateFairnessMetrics(null);
+      assert("Null doc metrics returns object", typeof nullMetrics === "object" && nullMetrics.overallScore === 50);
+      assert("Null doc has 5 vectors", Object.keys(nullMetrics.vectors).length === 5);
+
+      const emptyDoc = { clauses: [] };
+      const emptyMetrics = LegalEngine.calculateFairnessMetrics(emptyDoc);
+      assert("Empty doc metrics returns object", emptyMetrics.overallScore === 50 && emptyMetrics.highRiskCount === 0);
+
+      // Test 2: Sample Lease Agreement Scoring
+      const lease = SAMPLE_DOCUMENTS["lease-agreement"];
+      const leaseMetrics = LegalEngine.calculateFairnessMetrics(lease);
+      assert("Lease has high risk count 3", leaseMetrics.highRiskCount === 3, `Got: ${leaseMetrics.highRiskCount}`);
+      assert("Lease overall score < 50", leaseMetrics.overallScore < 50, `Got: ${leaseMetrics.overallScore}`);
+      assert("Lease healthClass is 'low'", leaseMetrics.healthClass === "low", `Got: ${leaseMetrics.healthClass}`);
+      assert("Lease financial vector is defined and numeric", typeof leaseMetrics.vectors.financial === "number" && !isNaN(leaseMetrics.vectors.financial));
+
+      // Test 3: Sample Mutual NDA (Clean, Fair Contract)
+      const nda = SAMPLE_DOCUMENTS["mutual-nda"];
+      const ndaMetrics = LegalEngine.calculateFairnessMetrics(nda);
+      assert("NDA high risk count is 0", ndaMetrics.highRiskCount === 0);
+      assert("NDA score >= 90", ndaMetrics.overallScore >= 90, `Got: ${ndaMetrics.overallScore}`);
+      assert("NDA healthClass is 'high' (safe)", ndaMetrics.healthClass === "high");
+      assert("NDA vectors do not have arbitrary 75 penalty", ndaMetrics.vectors.liability >= 85);
+
+      // Test 4: Regression Test for Long Clean Contracts (Old bug penalized 2 points per clause)
+      const syntheticClauses = [];
+      for (let i = 1; i <= 20; i++) {
+        syntheticClauses.push({
+          id: `c-${i}`,
+          number: `Section ${i}`,
+          title: `Standard Clause ${i}`,
+          category: i % 2 === 0 ? "Dispute Resolution" : "General Commercial",
+          riskLevel: "low",
+          riskScore: 20,
+          originalText: `Standard boilerplate clause ${i} governing terms.`,
+          plainEnglish: { standard: `Standard clause ${i}` },
+          actionInsight: "✅ Balanced and typical."
+        });
+      }
+      const longCleanDoc = { id: "clean-doc", title: "Clean 20-Clause Agreement", clauses: syntheticClauses };
+      const cleanMetrics = LegalEngine.calculateFairnessMetrics(longCleanDoc);
+      assert("20-clause clean doc has high overall score (>= 88)", cleanMetrics.overallScore >= 88, `Got: ${cleanMetrics.overallScore} (Old bug gave 60)`);
+      assert("Clean doc healthClass is 'high'", cleanMetrics.healthClass === "high");
+
+      // Test 5: Grounded Q&A - Exact and Synonym Search
+      const qLateFee = LegalEngine.queryDocument(lease, "What is the late fee?");
+      assert("Q&A late fee returns citations", qLateFee.citations && qLateFee.citations.length > 0);
+      assert("Q&A late fee top citation is Section 2.1", qLateFee.citations[0].number === "Section 2.1", `Got: ${qLateFee.citations[0]?.number}`);
+      assert("Q&A late fee answer contains Section 2.1", qLateFee.answer.includes("Section 2.1"));
+
+      const qEntry = LegalEngine.queryDocument(lease, "Can the landlord enter without notice?");
+      assert("Q&A entry cites Section 5.3", qEntry.citations[0].number === "Section 5.3", `Got: ${qEntry.citations[0]?.number}`);
+
+      const freelance = SAMPLE_DOCUMENTS["freelance-contract"];
+      const qSideProjects = LegalEngine.queryDocument(freelance, "Can I work on my own side projects?");
+      assert("Q&A side projects cites IP or Non-compete", qSideProjects.citations.some(c => c.number.includes("6.2") || c.number.includes("9.3")));
+
+      const qUnrelated = LegalEngine.queryDocument(lease, "How do spaceships refuel on Jupiter?");
+      assert("Unrelated question returns graceful silence notice", qUnrelated.answer.includes("could not locate a specific clause"));
+      assert("Unrelated question has empty citations", qUnrelated.citations.length === 0);
+
+      // Test 6: Attorney Consultation Brief
+      const leaseBrief = LegalEngine.generateAttorneyBrief(lease);
+      assert("Attorney brief contains document title", leaseBrief.includes(lease.title));
+      assert("Attorney brief contains Issue 1", leaseBrief.includes("Issue 1:"));
+      assert("Attorney brief contains Strategic Question for Counsel", leaseBrief.includes("Strategic Question for Counsel"));
+      assert("Attorney brief contains Executive Summary", leaseBrief.includes("Executive Summary for Counsel"));
+
+      const ndaBrief = LegalEngine.generateAttorneyBrief(nda);
+      assert("NDA brief handles zero red flags gracefully", ndaBrief.includes("No high-severity red flags detected"));
+
+      const nullBrief = LegalEngine.generateAttorneyBrief(null);
+      assert("Null doc brief does not crash", typeof nullBrief === "string");
+
+      // Test 7: Negotiation Counter-Proposal
+      const leaseCounter = LegalEngine.generateNegotiationCounter(lease);
+      assert("Lease counter contains Subject line", leaseCounter.includes("Subject: Proposed Revisions"));
+      assert("Lease counter contains Proposed Adjustment", leaseCounter.includes("Proposed Adjustment:"));
+      assert("Lease counter contains Business Rationale", leaseCounter.includes("Business Rationale:"));
+
+      const ndaCounter = LegalEngine.generateNegotiationCounter(nda);
+      assert("NDA counter generates confirmation draft", ndaCounter.includes("Confirmation & Execution Draft"));
+
+      const nullCounter = LegalEngine.generateNegotiationCounter(null);
+      assert("Null counter does not crash", typeof nullCounter === "string");
+
+      // Test 8: Obligations Checklist
+      const leaseObligations = LegalEngine.generateObligationsChecklist(lease);
+      assert("Lease obligations returns array", Array.isArray(leaseObligations) && leaseObligations.length >= 3);
+      assert("Obligations have id, task, detail, category", leaseObligations[0].id && leaseObligations[0].task && leaseObligations[0].detail);
+      
+      // Ensure all task strings in lease are distinct
+      const taskSet = new Set(leaseObligations.map(o => o.task));
+      assert("Obligations tasks are unique (no state collision)", taskSet.size === leaseObligations.length, `Set size: ${taskSet.size}, array len: ${leaseObligations.length}`);
+
+      // Test 9: Predatory Pattern Detection
+      const patterns = LegalEngine.detectPredatoryPatterns(lease);
+      assert("Detects predatory patterns on lease", Array.isArray(patterns) && patterns.length >= 2);
+
+      // Test 10: Executive Summary
+      const summary = LegalEngine.generatePlainEnglishExecutiveSummary(lease);
+      assert("Executive summary is non-empty string", typeof summary === "string" && summary.length > 50);
+
+    } catch (err) {
+      assert("Execution without uncaught error", false, err.stack || err.message);
+    }
+
+    const failed = results.filter(r => !r.pass);
+    const passed = results.filter(r => r.pass);
+
+    const out = document.getElementById("test-results");
+    out.innerHTML = `
+      <h2 style="color: ${failed.length === 0 ? '#10B981' : '#EF4444'}">
+        ${failed.length === 0 ? 'ALL TESTS PASSED 🎉' : `${failed.length} TESTS FAILED ⚠️`}
+      </h2>
+      <p>Total Tests: ${results.length} | Passed: ${passed.length} | Failed: ${failed.length}</p>
+      <ul>
+        ${results.map(r => `
+          <li style="color: ${r.pass ? '#34D399' : '#F87171'}; margin-bottom: 6px;">
+            ${r.pass ? '✅' : '❌'} <strong>${r.name}</strong> ${r.details ? `<br><small style="color: #CBD5E1;">${r.details}</small>` : ''}
+          </li>
+        `).join("")}
+      </ul>
+    `;
+    window.TEST_RESULTS = { total: results.length, passed: passed.length, failed: failed.length, failures: failed };
+  </script>
+</body>
+</html>

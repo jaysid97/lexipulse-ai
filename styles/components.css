@@ -1,0 +1,1059 @@
+/* ==========================================================================
+   LexiPulse AI - UI Components Stylesheet
+   Rich interactive cards, risk gauge, diff views, chat copilot, checklists
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Buttons & Inputs
+   -------------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), #4338CA);
+  color: #FFF;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, #4F46E5, #3730A3);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+}
+
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-glass);
+}
+.btn-secondary:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border-focus);
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 0.78rem;
+}
+
+.btn-danger {
+  background: var(--risk-high-bg);
+  color: #F87171;
+  border: 1px solid var(--risk-high-border);
+}
+.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+/* --------------------------------------------------------------------------
+   Cards & Layout Panels
+   -------------------------------------------------------------------------- */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition-normal);
+}
+.glass-panel:hover {
+  border-color: var(--border-glass);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.panel-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-primary);
+}
+
+/* --------------------------------------------------------------------------
+   Document Overview Hero Banner
+   -------------------------------------------------------------------------- */
+.doc-hero-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 22px 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+.doc-hero-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 250px;
+  height: 100%;
+  background: radial-gradient(circle at 80% 50%, rgba(99, 102, 241, 0.15), transparent 70%);
+  pointer-events: none;
+}
+
+.doc-hero-info h2 {
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.doc-meta-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.meta-chip strong {
+  color: var(--text-primary);
+}
+
+.doc-quick-stats {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(10, 14, 23, 0.5);
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  min-width: 90px;
+}
+
+.stat-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Split Layout: Document Demystifier
+   -------------------------------------------------------------------------- */
+.demystifier-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  min-height: 680px;
+}
+
+@media (max-width: 1024px) {
+  .demystifier-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.doc-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(15, 23, 42, 0.85);
+  border-bottom: 1px solid var(--border-subtle);
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
+}
+
+.column-title-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.reading-level-selector {
+  display: flex;
+  align-items: center;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  gap: 2px;
+}
+
+.level-btn {
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-radius: 4px;
+  transition: all var(--transition-fast);
+}
+
+.level-btn.active {
+  background: var(--primary);
+  color: #FFF;
+}
+
+.clause-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  max-height: 720px;
+  overflow-y: auto;
+  background: rgba(10, 14, 23, 0.4);
+  border: 1px solid var(--border-subtle);
+  border-top: none;
+  border-bottom-left-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
+}
+
+/* Individual Clause Card */
+.clause-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  transition: all var(--transition-fast);
+  position: relative;
+  cursor: pointer;
+}
+
+.clause-card:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: var(--bg-card-hover);
+}
+
+.clause-card.selected {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.08);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.clause-card.high-risk {
+  border-left: 3px solid var(--risk-high);
+}
+.clause-card.med-risk {
+  border-left: 3px solid var(--risk-med);
+}
+.clause-card.low-risk {
+  border-left: 3px solid var(--risk-low);
+}
+
+.clause-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.clause-number {
+  font-size: 0.74rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.risk-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.risk-pill.high {
+  background: var(--risk-high-bg);
+  color: #F87171;
+  border: 1px solid var(--risk-high-border);
+}
+.risk-pill.med {
+  background: var(--risk-med-bg);
+  color: #FBBF24;
+  border: 1px solid var(--risk-med-border);
+}
+.risk-pill.low {
+  background: var(--risk-low-bg);
+  color: #34D399;
+  border: 1px solid var(--risk-low-border);
+}
+
+.clause-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+}
+
+.clause-original-text {
+  font-size: 0.85rem;
+  color: #CBD5E1;
+  font-family: var(--font-sans);
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+/* Plain English Explanation Box */
+.plain-explanation-box {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border-subtle);
+}
+
+.plain-explanation-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--accent-cyan);
+  margin-bottom: 5px;
+}
+
+.plain-text {
+  font-size: 0.85rem;
+  color: #E2E8F0;
+  line-height: 1.5;
+}
+
+.clause-action-insight {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: rgba(239, 68, 68, 0.08);
+  border-left: 2px solid var(--risk-high);
+  font-size: 0.78rem;
+  color: #FCA5A5;
+}
+
+.clause-action-insight.med {
+  background: rgba(245, 158, 11, 0.08);
+  border-left: 2px solid var(--risk-med);
+  color: #FCD34D;
+}
+
+.clause-action-insight.safe {
+  background: rgba(16, 185, 129, 0.08);
+  border-left: 2px solid var(--risk-low);
+  color: #6EE7B7;
+}
+
+/* --------------------------------------------------------------------------
+   Risk Radar & Fairness Score View
+   -------------------------------------------------------------------------- */
+.risk-score-container {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .risk-score-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.gauge-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 20px;
+  text-align: center;
+  position: relative;
+}
+
+/* Radial Dial Gauge */
+.gauge-svg-wrapper {
+  position: relative;
+  width: 220px;
+  height: 140px;
+  margin-bottom: 12px;
+}
+
+.gauge-svg-wrapper svg {
+  width: 100%;
+  height: 100%;
+}
+
+.gauge-center-text {
+  position: absolute;
+  bottom: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.gauge-score-number {
+  font-size: 2.8rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.gauge-score-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 4px;
+}
+
+.score-high { color: var(--risk-low); }
+.score-med { color: var(--risk-med); }
+.score-low { color: var(--risk-high); }
+
+/* Vector Risk Breakdown Progress Bars */
+.vector-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 14px;
+  width: 100%;
+}
+
+.vector-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.vector-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+}
+
+.vector-score {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.vector-bar-track {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.vector-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Red Flags List */
+.flagged-clauses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.flagged-item {
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: rgba(20, 27, 45, 0.6);
+  border: 1px solid var(--border-subtle);
+  transition: all var(--transition-fast);
+}
+
+.flagged-item:hover {
+  background: rgba(30, 41, 59, 0.75);
+}
+
+.flagged-item.critical {
+  border-left: 4px solid var(--risk-high);
+}
+.flagged-item.warning {
+  border-left: 4px solid var(--risk-med);
+}
+
+.flagged-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.critical .flagged-icon {
+  background: var(--risk-high-bg);
+  color: var(--risk-high);
+}
+.warning .flagged-icon {
+  background: var(--risk-med-bg);
+  color: var(--risk-med);
+}
+
+.flagged-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.flagged-heading {
+  font-size: 0.92rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.flagged-desc {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.flagged-solution {
+  font-size: 0.78rem;
+  color: #38BDF8;
+  font-weight: 600;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* --------------------------------------------------------------------------
+   Comparison & Redline Diff View
+   -------------------------------------------------------------------------- */
+.diff-viewer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .diff-viewer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.diff-doc-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.diff-doc-header {
+  padding: 14px 18px;
+  background: rgba(15, 23, 42, 0.9);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.diff-doc-body {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 650px;
+  overflow-y: auto;
+}
+
+.diff-clause-box {
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  position: relative;
+  transition: all var(--transition-fast);
+}
+
+.diff-clause-box.added {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-left: 4px solid var(--risk-low);
+}
+
+.diff-clause-box.removed {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-left: 4px solid var(--risk-high);
+  text-decoration: line-through;
+  opacity: 0.8;
+}
+
+.diff-clause-box.modified {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-left: 4px solid var(--risk-med);
+}
+
+.diff-clause-box.unchanged {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+}
+
+.diff-impact-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+.diff-impact-badge.high {
+  background: var(--risk-high-bg);
+  color: #F87171;
+}
+.diff-impact-badge.med {
+  background: var(--risk-med-bg);
+  color: #FBBF24;
+}
+
+/* --------------------------------------------------------------------------
+   Interactive Legal Copilot (Q&A)
+   -------------------------------------------------------------------------- */
+.copilot-container {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+  height: 680px;
+}
+
+@media (max-width: 950px) {
+  .copilot-container {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}
+
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chat-bubble {
+  display: flex;
+  gap: 12px;
+  max-width: 85%;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.chat-bubble.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.chat-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.chat-avatar.ai {
+  background: linear-gradient(135deg, var(--primary), var(--accent-cyan));
+  color: #FFF;
+}
+.chat-avatar.user {
+  background: #334155;
+  color: #F1F5F9;
+}
+
+.bubble-content {
+  background: var(--bg-tertiary);
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: #E2E8F0;
+  border: 1px solid var(--border-subtle);
+}
+
+.chat-bubble.user .bubble-content {
+  background: linear-gradient(135deg, #4338CA, #4F46E5);
+  color: #FFF;
+  border: none;
+}
+
+.bubble-citation-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  color: #38BDF8;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.bubble-citation-tag:hover {
+  background: rgba(6, 182, 212, 0.3);
+}
+
+.chat-input-area {
+  padding: 14px 18px;
+  background: rgba(15, 23, 42, 0.9);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input-box {
+  flex: 1;
+  background: var(--bg-input);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.chat-input-box:focus {
+  border-color: var(--border-focus);
+}
+
+/* Suggested Questions Sidebar */
+.suggested-questions-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  overflow-y: auto;
+}
+
+.question-chip-btn {
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  color: #CBD5E1;
+  font-size: 0.8rem;
+  text-align: left;
+  line-height: 1.4;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.question-chip-btn:hover {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: #FFF;
+}
+
+/* --------------------------------------------------------------------------
+   Action Hub: Attorney Brief, Negotiation Counters & Checklists
+   -------------------------------------------------------------------------- */
+.action-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.generator-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  transition: all var(--transition-normal);
+}
+
+.generator-card:hover {
+  border-color: var(--border-focus);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.gen-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.gen-card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.gen-card-desc {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+/* Checklists */
+.checklist-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-subtle);
+  transition: background var(--transition-fast);
+  cursor: pointer;
+}
+
+.checklist-item:hover {
+  background: rgba(30, 41, 59, 0.6);
+}
+
+.checklist-checkbox {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.checklist-text {
+  font-size: 0.85rem;
+  color: #E2E8F0;
+}
+
+.checklist-item.done .checklist-text {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Modals & Overlays
+   -------------------------------------------------------------------------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  padding: 20px;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-window {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  transform: scale(0.95);
+  transition: transform 0.25s ease;
+}
+
+.modal-overlay.active .modal-window {
+  transform: scale(1);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.modal-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Form Controls in Modal */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.form-input, .form-textarea {
+  background: var(--bg-input);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.form-textarea {
+  min-height: 160px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.form-input:focus, .form-textarea:focus {
+  border-color: var(--border-focus);
+}
+
+/* --------------------------------------------------------------------------
+   Print & Export Styles
+   -------------------------------------------------------------------------- */
+@media print {
+  .app-header, .nav-tab-bar, .disclaimer-banner, .btn, .chat-input-area, .suggested-questions-panel {
+    display: none !important;
+  }
+  body, #app-root {
+    background: #FFF !important;
+    color: #000 !important;
+  }
+  .glass-panel, .clause-card, .diff-doc-card {
+    border: 1px solid #CCC !important;
+    box-shadow: none !important;
+    background: #FFF !important;
+    color: #000 !important;
+  }
+  .plain-text, .clause-original-text {
+    color: #222 !important;
+  }
+}

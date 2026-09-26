@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1" />
+      <stop offset="50%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  <rect width="48" height="48" rx="12" fill="#0B0F19" />
+  <circle cx="24" cy="24" r="18" stroke="url(#grad)" stroke-width="1.5" fill="none" opacity="0.4" />
+  <!-- Legal Scale Pillar -->
+  <path d="M24 10 L24 38 M18 38 L30 38" stroke="url(#grad)" stroke-width="2.5" stroke-linecap="round" />
+  <!-- Balance Beam -->
+  <path d="M12 16 L36 16" stroke="url(#grad)" stroke-width="2.5" stroke-linecap="round" />
+  <!-- Left Pan with Pulse -->
+  <path d="M12 16 L8 24 M12 16 L16 24 M7 24 Q12 28 17 24 Z" stroke="#38BDF8" stroke-width="1.8" fill="#38BDF8" fill-opacity="0.2" stroke-linejoin="round" />
+  <!-- Right Pan with Pulse -->
+  <path d="M36 16 L32 24 M36 16 L40 24 M31 24 Q36 28 41 24 Z" stroke="#818CF8" stroke-width="1.8" fill="#818CF8" fill-opacity="0.2" stroke-linejoin="round" />
+  <!-- AI Sparkle Core -->
+  <circle cx="24" cy="16" r="3.5" fill="#38BDF8" filter="url(#glow)" />
+</svg>
